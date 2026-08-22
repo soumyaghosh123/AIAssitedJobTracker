@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Visible, consistent focus states */
+:focus-visible {
+  outline: 2px solid theme('colors.blue.500');
+  outline-offset: 1px;
+}
+
+/* Keep focus rings visible in dark mode */
+.dark :focus-visible {
+  outline-color: theme('colors.blue.400');
+}
+
+/* Touch-friendly scrollbars for the Kanban board */
+.overflow-x-auto {
+  scrollbar-width: thin;
+  scrollbar-color: theme('colors.slate.300') transparent;
+}
+
+.dark .overflow-x-auto {
+  scrollbar-color: theme('colors.slate.600') transparent;
+}
+
+/* Always-visible slim scrollbars for Kanban columns so vertical
+   scrollability is discoverable (native overlay scrollbars auto-hide). */
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: theme('colors.slate.400') transparent;
+}
+
+.scroll-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scroll-thin::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  background-color: theme('colors.slate.300');
+}
+
+.scroll-thin::-webkit-scrollbar-thumb:hover {
+  background-color: theme('colors.slate.400');
+}
+
+.scroll-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dark .scroll-thin {
+  scrollbar-color: theme('colors.slate.600') transparent;
+}
+
+.dark .scroll-thin::-webkit-scrollbar-thumb {
+  background-color: theme('colors.slate.600');
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Hide number input spinners for a cleaner look where used */
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
