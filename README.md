@@ -12,6 +12,16 @@ CareerPulse is a professional, local-first career and job application management
 
 ---
 
+## 🌐 Live Demo
+
+The application is deployed and publicly accessible at:
+
+**https://aienablejobtracker.vercel.app**
+
+Anyone with the URL can open it from any device or browser — no login required. All data remains local to each visitor's browser (IndexedDB); nothing is stored on the server.
+
+---
+
 ## ✨ Features
 
 ### Navigation

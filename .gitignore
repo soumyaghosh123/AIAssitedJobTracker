@@ -5,4 +5,7 @@ coverage
 *.tsbuildinfo
 .DS_Store
 npm-debug.log*
+build.log
 .commandcode/
+
+.vercel
