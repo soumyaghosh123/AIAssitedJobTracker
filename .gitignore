@@ -3,6 +3,9 @@ dist
 coverage
 *.local
 *.tsbuildinfo
+.env
+.env.*
+!.env.example
 .DS_Store
 npm-debug.log*
 build.log
