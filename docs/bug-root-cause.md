@@ -26,6 +26,7 @@
 | BUG-004 | Low–Med | Dashboard | "Applied" KPI count disagrees with Tracker Overview "Applied" | ⚖️ Intended |
 | BUG-005 | Med | Dashboard | Rows in Upcoming Follow-ups can show no action button | ⚖️ Intended |
 | BUG-006 | Low | Dashboard | Application Funnel "Follow-up" row appears without a visible bar | ⓘ Known limitation |
+| BUG-007 | High | Settings | "Clear all local data" does not delete all local data | ✅ Fixed |
 
 ---
 
@@ -209,6 +210,69 @@ bar is rendered (`bg-violet-500`) but is short enough to read as missing in a fl
 The rendering path in `DashboardPage.tsx` is correct (each funnel row renders a colored segment). As a
 quality-of-life improvement, consider enforcing a **minimum visible width** (e.g. `max-pct` floor of ~2%) so
 low-count stages remain visually evident. This is a cosmetic enhancement, not a functional defect.
+
+---
+
+## BUG-007 — "Clear all local data" does not delete all local data
+
+**Severity:** High &nbsp;·&nbsp; **Status:** ✅ Fixed
+
+**Observed behaviour**
+After confirming **Settings → Data & Backup → Clear all local data**, the app reports "All local data
+cleared", but jobs, profile and settings reappear — the dashboard/tracker still show data and the selected
+theme/preferences survive the clear.
+
+**Root cause**
+Two independent defects combined:
+
+1. **Demo data auto-reseed masked a deliberate clear.** `useJobs` seeded the 25 demo jobs on *every* mount
+   whenever the jobs store was empty:
+   ```ts
+   if (all.length === 0) {
+     const seedJobs = buildSeedJobs();
+     await repo.bulkPutJobs(seedJobs);
+     all = seedJobs;
+   }
+   ```
+   There was no way to distinguish a genuine first run from a store that had just been wiped, so the demo
+   set was written straight back after `clearAllData()` emptied the store.
+
+2. **Settings state was never refreshed after clearing.** `SettingsPage.confirmClearAll()` refreshed the
+   jobs/profile/documents hooks but not settings:
+   ```ts
+   await Promise.all([refreshJobs(), refreshProfile(), refreshDocs()]);
+   ```
+   The `useSettings` hook kept its previous in-memory values, and because `getSettings()` falls back to
+   defaults when the store is empty, the "cleared" theme and preferences were simply re-derived rather than
+   removed. Any subsequent settings edit re-persisted the old values into the store.
+
+**Fix implemented**
+
+1. **First-run seeding is now gated by a persistent marker** (`src/features/jobs/jobRepository.ts`). The
+   marker lives in `localStorage` (outside IndexedDB) so it survives a store wipe:
+   ```ts
+   const DEMO_SEEDED_KEY = 'career-pulse:demo-seeded';
+   export function hasDemoBeenSeeded(): boolean {
+     return localStorage.getItem(DEMO_SEEDED_KEY) === '1';
+   }
+   export function markDemoSeeded(): void {
+     localStorage.setItem(DEMO_SEEDED_KEY, '1');
+   }
+   ```
+   `useJobs` now seeds only when the store is empty **and** the marker is absent; any existing data also
+   sets the marker (covers upgrades). After "Clear all local data" the store stays empty, and the demo set
+   is only restored via the explicit **Load sample data** action in Settings.
+
+2. **Settings are refreshed after clearing** (`src/pages/SettingsPage.tsx`):
+   ```ts
+   await Promise.all([refreshJobs(), refreshProfile(), refreshDocs(), refreshSettings()]);
+   ```
+   The `useSettings` hook already exposed `refresh`; it is now wired into the clear handler so the
+   in-memory theme/preferences reset to defaults immediately.
+
+**Verification**
+New unit test `src/test/clearAllData.test.ts` verifies `clearAllData()` clears every object store and that
+the demo-seeded marker is preserved across a wipe. Existing test suite, lint and production build all pass.
 
 ---
 

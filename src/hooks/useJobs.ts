@@ -46,12 +46,17 @@ export function useJobs(): UseJobsResult {
       setLoading(true);
       try {
         let all = await getJobs();
-        // First-run experience: seed demo data when the local store is empty
-        // so the tracker and dashboard render with a realistic spread.
-        if (all.length === 0) {
+        // First-run experience: seed demo data only on the very first visit.
+        // A deliberate "Clear all local data" (Settings) empties the stores but
+        // leaves the seed marker in place, so an empty store afterwards stays
+        // empty instead of being re-seeded.
+        if (all.length === 0 && !repo.hasDemoBeenSeeded()) {
           const seedJobs = buildSeedJobs();
           await repo.bulkPutJobs(seedJobs);
+          repo.markDemoSeeded();
           all = seedJobs;
+        } else if (all.length > 0) {
+          repo.markDemoSeeded();
         }
         if (!cancelled) setJobs(all);
       } catch (e) {

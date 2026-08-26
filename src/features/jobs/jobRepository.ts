@@ -237,3 +237,22 @@ export async function clearAllData(): Promise<void> {
   ]);
   await tx.done;
 }
+
+// ---------- First-run demo seeding ----------
+
+/**
+ * Marker (kept outside IndexedDB) that records whether the demo seed set has
+ * ever been loaded. "Clear all local data" wipes the IndexedDB stores but keeps
+ * this marker, so an empty store after a deliberate clear is NOT mistaken for a
+ * first run and re-seeded with demo jobs. Demo data can always be restored
+ * explicitly from Settings → Data & Backup → Load sample data.
+ */
+const DEMO_SEEDED_KEY = 'career-pulse:demo-seeded';
+
+export function hasDemoBeenSeeded(): boolean {
+  return localStorage.getItem(DEMO_SEEDED_KEY) === '1';
+}
+
+export function markDemoSeeded(): void {
+  localStorage.setItem(DEMO_SEEDED_KEY, '1');
+}

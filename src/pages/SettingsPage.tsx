@@ -28,7 +28,7 @@ const PAGE_OPTIONS = [
 ];
 
 export function SettingsPage() {
-  const { settings, loading, error, update } = useSettings();
+  const { settings, loading, error, update, refresh: refreshSettings } = useSettings();
   const { refresh: refreshJobs, seedDemoData } = useJobs();
   const { refresh: refreshProfile } = useProfile();
   const { refresh: refreshDocs } = useDocuments();
@@ -135,7 +135,7 @@ export function SettingsPage() {
       await clearAllData();
       setClearOpen(false);
       showToast('All local data cleared');
-      await Promise.all([refreshJobs(), refreshProfile(), refreshDocs()]);
+      await Promise.all([refreshJobs(), refreshProfile(), refreshDocs(), refreshSettings()]);
     } catch {
       showToast('Could not clear local data.', 'error');
     } finally {
